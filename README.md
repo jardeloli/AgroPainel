@@ -4,7 +4,7 @@ Painel do produtor rural do sul do Maranhão: clima dos municípios da região, 
 
 > Trabalho da disciplina **Programação para Web**, Aula 10 (Projeto React em equipe), **Tema A - AgroPainel**.
 
-- **Aplicação publicada:** _colar aqui o link (Vercel, Netlify ou GitHub Pages)_
+- **Aplicação publicada:** _[ GitHub Pages Agro Painel)](https://jardeloli.github.io/AgroPainel/)_
 - **Repositório:** _[link do GitHub](https://github.com/jardeloli)_
 ## Equipe
 

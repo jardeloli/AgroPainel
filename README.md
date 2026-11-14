@@ -2,92 +2,112 @@
 
 Painel do produtor rural do sul do Maranhão: clima dos municípios da região, indicador de pulverização, cadastro de talhões, diário de operações e relatório da safra.
 
-> Trabalho da disciplina **Programação para Web**, Aula 10 (Projeto React em equipe), **Tema A**.
+> Trabalho da disciplina **Programação para Web**, Aula 10 (Projeto React em equipe), **Tema A - AgroPainel**.
 
 - **Aplicação publicada:** _colar aqui o link (Vercel, Netlify ou GitHub Pages)_
-- **Repositório:** _colar aqui o link do GitHub_
-- **Integrantes:** _nome 1, nome 2, nome 3_
+- **Repositório:** _[link do GitHub](https://github.com/jardeloli)_
+## Equipe
 
-## O que o sistema faz
+| Integrante | Responsável por |
+| --- | --- |
+| _Jardel Oliveira_ | _Desenv. Painel, talhões, e pagina não encontrada_ |
+| _Gustavo Barros_ | _Desenv. Editar talhão_ |
+| _Gustavo Noleto_ | _Desenv. Novo talhão e detalhe_ |
+| _Wallaci Araújo_ | _Desenv. Relatório_ |
 
-| Rota | Tela | O que mostra |
-| --- | --- | --- |
-| `/` | Painel | Seletor de município, clima atual, previsão de 7 dias, indicador de pulverização, área total, número de talhões e próximas três colheitas |
-| `/talhoes` | Talhões | Cartões com nome, cultura, área, situação e previsão de colheita; filtros por cultura, situação e busca pelo nome |
-| `/talhoes/novo` | Novo talhão | Formulário de cadastro |
-| `/talhoes/:id` | Detalhe | Situação, dias desde o plantio, previsão, diário de operações em ordem de data e formulário de nova operação |
-| `/talhoes/:id/editar` | Editar | Mesmo formulário preenchido; exclusão com confirmação |
-| `/relatorio` | Relatório | Área por cultura, custo total, custo por hectare e produção de cada talhão, com exportação em CSV |
 
-Qualquer endereço inexistente mostra a página "não encontrada" com link para o início.
 
 ## Como rodar
 
+Requisito: Node.js 20 ou superior.
+
 ```bash
 npm install
-npm run dev      # desenvolvimento
-npm test         # testes (Vitest)
-npm run build    # verificação de tipos + build de produção
-npm run preview  # servir o build localmente
+npm run dev
+npm test
 ```
 
-Requer Node.js 20 ou superior.
+Comandos adicionais:
 
-## Publicação
-
-O roteamento usa `HashRouter` e o `vite.config.ts` define `base: './'`, então o build da pasta `dist` funciona em qualquer hospedagem estática sem configurar redirecionamentos.
-
-- **Vercel / Netlify:** importe o repositório; comando de build `npm run build`, pasta de saída `dist`.
-- **GitHub Pages:** publique o conteúdo de `dist` (por exemplo com a action `actions/deploy-pages`).
-
-## Estrutura (RC02)
-
-```
-src/
-  componentes/   peças de interface reaproveitáveis (campos, cartões, estados, formulários)
-  paginas/       uma por rota
-  tipos/         interfaces e uniões literais do domínio (sem any)
-  dominio/       regras de negócio como funções puras, com testes (Vitest)
-  servicos/      acesso à API Open-Meteo, localStorage e utilitários com efeito colateral
-  contexto/      Context + reducer do estado compartilhado
-  hooks/         useTalhoes, useClima, useFocoNoErro, useTitulo
-  dados/         lista fixa de municípios
+```bash
+npm run build    # verifica os tipos e gera a versão de produção em dist/
+npm run preview  # executa localmente a versão gerada
+npm run lint     # análise estática com Oxlint
 ```
 
-A regra de dependência é de fora para dentro: `paginas` e `componentes` usam `dominio`; `dominio` não importa React nem toca no `localStorage`.
+## Telas
 
-## Decisões de projeto
+O projeto utiliza `HashRouter`. As rotas implementadas estão em `src/App.tsx`.
 
-- **Regras como funções puras.** `src/dominio` recebe a **data de hoje como parâmetro** em vez de chamar `new Date()`. Assim os testes fixam `09/11/2026` e os cenários do enunciado continuam valendo em qualquer data. Só `src/servicos/utilitarios.ts` lê o relógio.
-- **Datas sem erro de fuso.** Datas são texto `AAAA-MM-DD` e toda conta de dias é feita em UTC dos dois lados (`src/dominio/datas.ts`). Evita o erro de um dia por causa do fuso de Balsas.
-- **Dinheiro em centavos inteiros.** O usuário digita em reais (`1.250,50`), o sistema guarda `125050`.
-- **Clima sem resposta atrasada.** O hook `useClima` cancela a requisição anterior com `AbortController` na limpeza do `useEffect`. Se o usuário trocar de município rapidamente, a resposta lenta da cidade anterior nunca aparece na tela.
-- **Leitura defensiva do `localStorage`.** Valor apagado, JSON quebrado ou formato inesperado resultam em um app vazio, nunca em tela branca. Itens inválidos são descartados um a um (`src/servicos/armazenamento.ts`).
-- **Dados de rede como `unknown`.** A resposta da API é validada com type guards antes de virar tipo do domínio, então não há `any` explícito nem implícito.
-- **Formulários controlados.** A mensagem de erro aparece ao lado do campo, o envio fica bloqueado enquanto houver erro e o foco vai para o primeiro campo inválido.
-- **Diferenciais:** exportação do relatório em CSV, modo escuro automático (`prefers-color-scheme`) e página de detalhe com prazo de colheita ("faltam 9 dias").
-
-## Checklist dos requisitos comuns
-
-| Código | Requisito | Onde está |
+| Rota | Tela | Descrição |
 | --- | --- | --- |
-| RC01 | Vite `react-ts`, build sem erro, sem `any` | `npm run build`; `strict` ligado em `tsconfig.app.json` |
-| RC02 | Pastas exigidas dentro de `src` | ver estrutura acima |
-| RC03 | 5+ telas com `HashRouter`, rota com parâmetro, "não encontrado" | `src/App.tsx`, `src/paginas/` (7 telas) |
-| RC04 | 8+ componentes com props tipadas por `interface`, 2+ reaproveitados entre telas | `src/componentes/` (19 componentes) |
-| RC05 | Context com hook próprio | `src/contexto/`, `useTalhoes()` |
-| RC06 | `useEffect` que depende de um valor | `useClima(municipio)` |
-| RC07 | Carregando, erro com **Tentar de novo** e lista vazia | `EstadoCarregando`, `EstadoErro`, `EstadoVazio`; busca em `src/servicos/clima.ts` |
-| RC08 | Formulário controlado com validação | `FormularioTalhao`, `FormularioOperacao` |
-| RC09 | Persistência com leitura defensiva | `src/servicos/armazenamento.ts` |
-| RC10 | Regras puras com 10+ testes em Vitest | `src/dominio/*.test.ts` (41 testes no total) |
-| RC11 | Responsivo (360 px), `label` em todo campo, foco visível, teclado, contraste | `src/index.css`, componentes de campo |
-| RC12 | Repositório com commits de todos, README, publicação e atribuição | este arquivo; rodapé com link para Open-Meteo.com |
+| `#/` | Painel | Seleção do município, clima atual e previsão de sete dias, indicador de pulverização, resumo da área e dos talhões e próximas colheitas. |
+| `#/talhoes` | Talhões | Lista de talhões com filtros por cultura, situação e nome. |
+| `#/talhoes/novo` | Novo talhão | Formulário para cadastrar um talhão. |
+| `#/talhoes/:id` | Detalhe do talhão | Dados do talhão, situação da cultura, previsão de colheita e operações registradas. |
+| `#/talhoes/:id/editar` | Editar talhão | Edição dos dados e opção de exclusão com confirmação. |
+| `#/relatorio` | Relatório | Consolidação de área, custos e produção, com exportação em CSV. |
+| `#/*` | Não encontrado | Página apresentada para endereços que não correspondem às rotas cadastradas. |
 
-## Cenários de aceitação (hoje = 09/11/2026)
+### Capturas de tela
 
-Os cenários A01 a A13 estão cobertos por testes automatizados em `src/dominio/dominio.test.ts`. O A14 (troca de município) e o A15 (sem internet) dependem da tela e do hook `useClima`: ao trocar o município, o efeito roda de novo mostrando o estado de carregamento; sem conexão, o painel mostra a mensagem de erro com **Tentar de novo** e a lista de talhões segue funcionando, pois vem do `localStorage`.
+- Tela inicial
+- <img width="750" height="944" alt="image" src="https://github.com/user-attachments/assets/a697e7bb-57a4-407a-80b4-5d7d104fc59e" />
 
-## Atribuição
+- Tela talhões
+- <img width="1312" height="951" alt="image" src="https://github.com/user-attachments/assets/827dda57-487f-4b1f-8d4d-1fce99a3af94" />
 
-Dados meteorológicos: [Open-Meteo.com](https://open-meteo.com/) (API gratuita, sem chave, licença CC BY 4.0).
+- Tela novo talhão
+- <img width="766" height="864" alt="image" src="https://github.com/user-attachments/assets/e382c87e-7203-4e71-ae72-956539dd6742" />
+
+- Detalhe talhão
+- <img width="751" height="947" alt="image" src="https://github.com/user-attachments/assets/c3ebdab9-1e7e-4d0f-a735-0d80a3f263bf" />
+
+- Editar talhão
+- <img width="992" height="848" alt="image" src="https://github.com/user-attachments/assets/dac5ed8b-21f1-46d9-9cae-0ee540b2e3ed" />
+
+- Relatorio
+- <img width="1067" height="856" alt="image" src="https://github.com/user-attachments/assets/1956a198-2c21-4328-8629-ceb295a32dfa" />
+
+- Não Encontrado
+- <img width="1062" height="736" alt="image" src="https://github.com/user-attachments/assets/1cebcdab-67ce-4ec5-a1b0-3efb97b56f20" />
+
+
+
+
+## Regras de negócio
+
+As regras de negócio estão concentradas em `src/dominio/`, com funções independentes da interface. As principais regras identificadas no código são:
+
+| Regra implementada | Arquivo |
+| --- | --- |
+| Define o ciclo de cada cultura e calcula a previsão de colheita a partir da data de plantio. | `src/dominio/talhao.ts` |
+| Determina a situação do talhão: aguardando plantio, em desenvolvimento, colheita próxima, ponto de colheita ou colhido. | `src/dominio/talhao.ts` |
+| Calcula dias desde o plantio, prazo até a colheita e ordena as próximas colheitas. | `src/dominio/talhao.ts` |
+| Filtra talhões por cultura, situação e nome, desconsiderando diferenças de acentuação e caixa na busca. | `src/dominio/talhao.ts` |
+| Avalia condições de pulverização considerando vento, temperatura, umidade, precipitação e probabilidade de chuva. | `src/dominio/pulverizacao.ts` |
+| Valida os dados do talhão, incluindo nome, cultura, município, área, data de plantio e coerência com operações já registradas. | `src/dominio/validacao.ts` |
+| Valida operações agrícolas, impedindo datas futuras ou anteriores ao plantio quando aplicável, custos negativos e mais de uma colheita por talhão. | `src/dominio/validacao.ts` |
+| Converte valores monetários entre reais e centavos e interpreta números digitados no formato brasileiro. | `src/dominio/dinheiro.ts` |
+| Calcula produção, custos por talhão, custo por hectare e totais do relatório; também prepara os dados em CSV. | `src/dominio/relatorio.ts` |
+| Valida datas e calcula intervalos e somas de dias em UTC para evitar diferenças causadas por fuso horário. | `src/dominio/datas.ts` |
+| Traduz códigos meteorológicos para descrições e ícones de condição climática. | `src/dominio/clima.ts` |
+
+A persistência e a integração externa ficam fora do domínio: `src/servicos/armazenamento.ts` valida e lê os dados do `localStorage`; `src/servicos/clima.ts` consulta e converte os dados da API meteorológica; e `src/servicos/exportacao.ts` realiza o download do CSV.
+
+## Decisões técnicas
+
+- **React com TypeScript e Vite:** estrutura a interface em componentes e páginas, com tipagem estática.
+- **React Router com `HashRouter`:** organiza a navegação por rotas e permite publicar a aplicação em hospedagem estática sem depender de regras específicas de redirecionamento do servidor.
+- **Context API e `useReducer`:** centralizam talhões, operações e município selecionado. O contexto é disponibilizado por `TalhoesProvider` e acessado pelo hook `useTalhoes`.
+- **`localStorage`:** mantém os talhões e as operações no navegador. A leitura é defensiva: dados inválidos ou corrompidos são descartados, evitando que um conteúdo inconsistente impeça a abertura da aplicação.
+- **Separação entre domínio e interface:** as regras ficam em funções em `src/dominio/`, sem dependência de React ou acesso direto ao armazenamento. Isso facilita os testes.
+- **Vitest:** executa os testes automatizados das regras de domínio, do reducer e do serviço de clima.
+- **Open-Meteo:** fornece as condições atuais e a previsão de sete dias para os municípios cadastrados. O hook `useClima` refaz a consulta quando o município muda e cancela a requisição anterior.
+- **Datas e valores monetários:** datas são manipuladas como `AAAA-MM-DD` e calculadas em UTC; valores monetários são armazenados em centavos inteiros para evitar imprecisão de ponto flutuante.
+- **Exportação CSV:** permite baixar o relatório com separador `;` e formatação numérica adequada ao padrão brasileiro.
+- **Interface responsiva e tema:** o CSS contempla diferentes larguras de tela e respeita a preferência de tema do sistema operacional (`prefers-color-scheme`).
+
+## Créditos
+
+- **Open-Meteo** — API utilizada para obter dados meteorológicos atuais e previsões. Site: https://open-meteo.com/. A atribuição à fonte é exibida também no rodapé da aplicação. A licença indicada no projeto é **CC BY 4.0**.
